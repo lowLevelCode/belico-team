@@ -1,20 +1,22 @@
 import { FastifyInstance, Plugin } from "fastify";
 import { RestPlugin } from "../typings";
 
-import AuthPlugin from "./plugins/auth.plugin";
+import AuthRoute from "./routes/admin/concreteRoutes/auth.route";
+import TipoUsuarioRoute from "./routes/admin/concreteRoutes/tipoUsuario.route";
+import UsuarioRoute from "./routes/admin/concreteRoutes/usuario.route";
 
-import UserPlugin from "./plugins/users";
-import UsuarioPluginGen from "./plugins/usuario-gen.plugin";
-import TipoUsuarioPluginGen from "./plugins/tipoUsuario-gen.plugin";
+import UsuarioRouteGen from "./routes/admin/usuario-gen.plugin";
+import TipoUsuarioRouteGen from "./routes/admin/tipoUsuario-gen.plugin";
 
 const ApiPlugin: RestPlugin = (fastify, opts, next) => {
 
     // register business routes
-    fastify.register(AuthPlugin, { prefix: '/auth' });  // endpoint concreto
+    fastify.register(AuthRoute, { prefix: '/auth' });          // endpoint concreto
+    fastify.register(TipoUsuarioRoute, { prefix: '/tipoUsuario' });  // endpoint concreto
+    fastify.register(UsuarioRoute, { prefix: '/usuario' });  // endpoint concreto
 
-    fastify.register(UsuarioPluginGen, { prefix: '/usuario' }); // enpoint generico
-    fastify.register(TipoUsuarioPluginGen, { prefix: '/tipoUsuario' }); // enpoint generico
-    fastify.register(UserPlugin, { prefix: '/users' });  // enpoint generico
+    //fastify.register(UsuarioRouteGen, { prefix: '/usuario' });         // enpoint generico
+    //fastify.register(TipoUsuarioRouteGen, { prefix: '/tipoUsuario' }); // enpoint generico 
 
     // call next
     next();
