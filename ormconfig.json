@@ -1,0 +1,15 @@
+{
+   "type": "mongodb",
+   "host": "localhost",
+   "username": "root",
+   "database": "test",
+   "synchronize": true,
+   "logging": true,
+   "entities": [
+      "src/models/**/*.ts"
+   ],
+   "extra": { "insecureAuth": false } ,
+   "cli": {
+      "entitiesDir": "src/models" 
+   }
+}
