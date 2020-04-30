@@ -1,13 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, ObjectIdColumn, ObjectID, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, ObjectIdColumn, ObjectID, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { TipoUsuario } from './tipoUsuario.entity';
 
-@Entity()
+@Entity({name:"cat_usuario"})
 export class Usuario {
+    
 
-    @ObjectIdColumn()
-    id: ObjectID;    
-
-    @Column({ nullable: false })  
+    @PrimaryGeneratedColumn()
     idu_usuario:number;
 
     @Column({ length: 100, nullable: false })  
@@ -15,17 +13,18 @@ export class Usuario {
 
     @Column({ length: 50, nullable: false })  
     clv_usuario:string;
-
-    @ManyToOne(type => TipoUsuario, tipoUsuario => tipoUsuario.usuarios)
-    idu_tipousuario: TipoUsuario;
-
-    @Column({ nullable: false })  
+    
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })  
     fec_alta :Date;
-        
+    
     @Column({ nullable: false })  
     opc_activo :number;
-
+    
     @Column({ nullable: false })  
     eliminado :number;    
+    
+    @ManyToOne(type => TipoUsuario, tipoUsuario => tipoUsuario.usuarios)
+    @JoinColumn({name: 'idu_tipousuario'})
+    tipousuario: TipoUsuario;
 
 }

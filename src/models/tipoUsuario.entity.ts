@@ -1,19 +1,18 @@
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, ObjectIdColumn, ObjectID, OneToMany } from 'typeorm';
 import { Usuario } from './usuario.entity';
 
-@Entity()
+@Entity({name:"cat_tiposusuarios"})
 export class TipoUsuario {
 
-    @ObjectIdColumn()
-    id: ObjectID;    
-
-    @Column({ nullable: false })  
+    @PrimaryGeneratedColumn({name:"idu_tipousuario"})
     idu_tipousuario :number;
 
     @Column({ length: 30, nullable: false })  
     nom_tipousuario :string;
 
-    @Column({ nullable: false })  
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })  
     fec_alta  :Date;
     
+    @OneToMany(type => Usuario, usuario => usuario.tipousuario)
+    usuarios: Usuario[];
 }
