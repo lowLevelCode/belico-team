@@ -1,59 +1,57 @@
 import { Usuario } from "../../../models/usuario.entity";
 import { defaultConn } from "../../../core/db";
 import { UserResult } from "../../resultSets/UserResult";
+import { HttpStatus } from "../../HttpStatus";
 
 export default function (fastify, opts, done) {      
 
     // verificamos las credenciales del usuario.
     fastify.post('/login', async (request, reply) => {
+        try {
+            
+        const {username, password} = request.body;                        
 
-        const {username, password} = request.body;        
-
-        if(username ==="" && password ==="")
-            reply.status(400).send({msg:"Campos vacios"});   // estatus BadRequest
+        if(username ==="" || password ==="")                        
+            reply.status(HttpStatus.BAD_REQUEST).send({msg:"Campos vacios"});   // estatus BadRequest
         
         const usuarioRepo = await defaultConn.getRepository(Usuario); // obtenemos el repositorio correspondiente
-        const user = await usuarioRepo.findOne({ 
+
+        let userResult:UserResult = await usuarioRepo.findOne({ 
             select:["idu_usuario","nom_usuario","fec_alta","opc_activo", "eliminado"],
             where:{ nom_usuario:username, clv_usuario:password, eliminado:0 } 
         });
         
-        if(!user)
-            reply.status(401).send({msg:"Accesso denegado"});   // estatus Unauthorized
+        if(!userResult)
+            reply.status(HttpStatus.UNAUTHORIZED).send({msg:"Accesso denegado"});   // estatus Unauthorized        
 
-        let userResult = new UserResult();
-        Object.assign(userResult, user);   // mapeamos el resultset            
+        userResult.token = fastify.jwt.sign({username,password}, {expiresIn:'1m'}); // generamos el token        
 
-        userResult.token = fastify.jwt.sign({username,password}, {expiresIn:86400}); // generamos el token
+        await reply.status(HttpStatus.OK).send(userResult);   // estatus Ok
 
-        await reply.status(200).send({userResult});   // estatus Ok
+        } catch (error) {
+            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({err:error});  // error interno de servidor
+        }
     });
   
     fastify.post('/registrar', async (request, reply) => {
+
         try {
 
-            let usuario = new Usuario();    // creamos entity o DAO
-            let userResult = new UserResult();
+            let usuario:Usuario = { ...request.body };            
+            let usuarioRepo = await defaultConn.getRepository(Usuario); //obtenemos el repositorio correspondiente            
 
-            let usuarioRepo = await defaultConn.getRepository(Usuario); //obtenemos el repositorio correspondiente
-
-            Object.assign(usuario, request.body);   // asignamos el objeto que llega en el request
-
-            const userSaved:Usuario = await usuarioRepo.save(usuario);    // guardamos la informacion en bd
-
-            Object.assign(userResult, userSaved);   // mapeamos el resultset            
-
+            const userSaved:Usuario = await usuarioRepo.save(usuario);    // guardamos la informacion en bd            
             const {nom_usuario,clv_usuario} = userSaved;            
 
-            userResult.token = fastify.jwt.sign({ nom_usuario, clv_usuario}, {expiresIn:86400}); // generamos el token
+            let userResult:UserResult = { ...userSaved };   
 
-            await reply.status(200).send({userResult});   // estatus Ok
+            userResult.token = fastify.jwt.sign({ nom_usuario, clv_usuario}, {expiresIn:'1m'}); // generamos el token
+
+            await reply.status(HttpStatus.OK).send(userResult);   // estatus Ok
 
         } catch (error) {
-            reply.status(500).send(error);  // error interno de servidor
-        }
-
-        //await reply.status(200).send("login");   // estatus Ok
+            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({err:error});  // error interno de servidor
+        }        
     });
 
 
@@ -63,7 +61,7 @@ export default function (fastify, opts, done) {
           preValidation: [fastify.authenticate]
         }, 
         async function(request, reply) {
-          return "request.userasd" 
+            await reply.status(HttpStatus.OK).send({msg:"Autenticado"});
         });
 
     done();
