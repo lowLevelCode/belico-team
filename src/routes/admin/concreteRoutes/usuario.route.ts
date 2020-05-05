@@ -43,5 +43,27 @@ export default function (fastify, opts, done) {
         }
     });
   
+    fastify.post('/page', async (request, reply) => {    
+
+        try {            
+
+            const {page,limit,order} = request.body;
+
+            if(page < 1 || limit < 0)
+                reply.status(400).send({msg:"la pagina y el limite debeb de ser mayor a cero"});  // BadRequest    
+
+            let usuarios = await defaultConn.getRepository(Usuario).createQueryBuilder("usuario")             
+            .where("usuario.eliminado = 0").orderBy("usuario.idu_usuario", order || "DESC")
+            .skip((page-1)*limit ).take(limit).getMany();
+            
+
+            reply.status(200).send(usuarios);   // estatus Ok
+
+        } catch (error) {
+            reply.status(500).send(error);  // error interno de servidor
+        }
+
+    });
+
     done();
 }
