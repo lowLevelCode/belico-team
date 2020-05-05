@@ -1,9 +1,9 @@
 import { defaultConn }  from "../../../core/db";
 import { Usuario } from "../../../models/usuario.entity";
+import { HttpStatus } from "../../HttpStatus";
 
 export default function (fastify, opts, done) {      
-
-    // verificamos las credenciales del usuario.
+    
     fastify.post('/add', async (request, reply) => {
         
         try {
@@ -14,10 +14,10 @@ export default function (fastify, opts, done) {
 
             await usuarioRepo.save(usuario);    // guardamos la informacion en bd
 
-            reply.status(200).send("Usuario guardado con exito");   // estatus Ok
+            reply.status(HttpStatus.OK).send("Usuario guardado con exito");   // estatus Ok
 
         } catch (error) {
-            reply.status(500).send(error);  // error interno de servidor
+            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send(error);  // error interno de servidor
         }
     });
 
@@ -34,12 +34,12 @@ export default function (fastify, opts, done) {
             });                                                
 
             if(!usuario)
-                reply.status(400).send("El usuario no existe");   // estatus Bad request
+                reply.status(HttpStatus.UNAUTHORIZED).send("El usuario no existe");   // estatus Bad request
 
-            reply.status(200).send(usuario);   // estatus Ok
+            reply.status(HttpStatus.OK).send(usuario);   // estatus Ok
 
         } catch (error) {
-            reply.status(500).send(error);  // error interno de servidor
+            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send(error);  // error interno de servidor
         }
     });
   

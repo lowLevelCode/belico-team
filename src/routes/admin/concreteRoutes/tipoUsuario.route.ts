@@ -1,5 +1,6 @@
 import { defaultConn }  from "../../../core/db";
 import { TipoUsuario } from "../../../models/tipoUsuario.entity";
+import { HttpStatus } from "../../HttpStatus";
 
 export default function (fastify, opts, done) {      
 
@@ -14,10 +15,10 @@ export default function (fastify, opts, done) {
 
             await tipoUsuarioRepo.save(tipoUsuario);    // guardamos la informacion en bd
 
-            reply.status(200).send("TipoUsuario guardado con exito");   // estatus Ok
+            reply.status(HttpStatus.OK).send("TipoUsuario guardado con exito");   // estatus Ok
 
         } catch (error) {
-            reply.status(500).send(error);  // error interno de servidor
+            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send(error);  // error interno de servidor
         }
     });
   
