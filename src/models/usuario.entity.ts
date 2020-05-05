@@ -17,10 +17,10 @@ export class Usuario {
     @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })  
     fec_alta :Date;
     
-    @Column({ nullable: false })  
+    @Column({ nullable: false , default:1})  
     opc_activo :number;
     
-    @Column({ nullable: false })  
+    @Column({ nullable: false ,default:0})  
     eliminado :number;    
     
     @ManyToOne(type => TipoUsuario, tipoUsuario => tipoUsuario.usuarios)
