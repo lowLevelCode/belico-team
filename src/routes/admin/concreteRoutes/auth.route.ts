@@ -3,57 +3,42 @@ import { defaultConn } from "../../../core/db";
 import { UserResult } from "../../resultSets/UserResult";
 import { HttpStatus } from "../../HttpStatus";
 
-export default function (fastify, opts, done) {      
+export default function (fastify, opts, done) 
+{      
 
     // verificamos las credenciales del usuario.
     fastify.post('/login', async (request, reply) => {
-        try {
-            
+        try {        
         const {username, password} = request.body;                        
-
+        
         if(username ==="" || password ==="")                        
             reply.status(HttpStatus.BAD_REQUEST).send({msg:"Campos vacios"});   // estatus BadRequest
         
-        const usuarioRepo = await defaultConn.getRepository(Usuario); // obtenemos el repositorio correspondiente
+        const usuarioRepo = await defaultConn.getRepository(Usuario);           // obtenemos el repositorio correspondiente        
 
-        let userResult:UserResult = await usuarioRepo.findOne({ 
-            select:["idu_usuario","nom_usuario","fec_alta","opc_activo", "eliminado"],
-            where:{ nom_usuario:username, clv_usuario:password, eliminado:0 } 
-        });
-        
+        // Consulta
+        const userResult:UserResult = await usuarioRepo
+        .createQueryBuilder('user')
+        .select(['user', 'tipousuario.id'])        
+        .leftJoin('user.tipousuario', 'tipousuario')
+        .where('user.nombre = :nombre', { nombre: username } )
+        .andWhere('user.contraseña = :contrasenia', { contrasenia: password } )        
+        .andWhere('user.eliminado = 0' )        
+        .getOne();                
+
         if(!userResult)
-            reply.status(HttpStatus.UNAUTHORIZED).send({msg:"Accesso denegado"});   // estatus Unauthorized        
-
-        userResult.token = fastify.jwt.sign({username,password}, {expiresIn:'1m'}); // generamos el token        
+            reply.status(HttpStatus.NOT_FOUND).send({msg:"No existe el usuario"});   // estatus Unauthorized        
+        
+        const idTipousuario = userResult.tipousuario.id;            
+        userResult.token = fastify.jwt.sign({username,password,idTipousuario}, {expiresIn:'1m'}); // generamos el token        
 
         await reply.status(HttpStatus.OK).send(userResult);   // estatus Ok
 
         } catch (error) {
             reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({err:error});  // error interno de servidor
         }
+
     });
-  
-    fastify.post('/registrar', async (request, reply) => {
-
-        try {
-
-            let usuario:Usuario = { ...request.body };            
-            let usuarioRepo = await defaultConn.getRepository(Usuario); //obtenemos el repositorio correspondiente            
-
-            const userSaved:Usuario = await usuarioRepo.save(usuario);    // guardamos la informacion en bd            
-            const {nom_usuario,clv_usuario} = userSaved;            
-
-            let userResult:UserResult = { ...userSaved };   
-
-            userResult.token = fastify.jwt.sign({ nom_usuario, clv_usuario}, {expiresIn:'1m'}); // generamos el token
-
-            await reply.status(HttpStatus.OK).send(userResult);   // estatus Ok
-
-        } catch (error) {
-            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({err:error});  // error interno de servidor
-        }        
-    });
-
 
     fastify.get(
         "/jwtAccess",

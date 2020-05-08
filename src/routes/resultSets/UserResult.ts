@@ -1,7 +1,11 @@
+import { TipoUsuarioResult } from "./TipoUsuarioResult";
+
+
 export class UserResult {
-    idu_usuario:number;    
-    nom_usuario:string;    
-    fec_alta :Date;    
-    opc_activo :number;
+    id:number;    
+    nombre:string;    
+    createAt :Date;    
+    opcActivo :number;
+    tipousuario:TipoUsuarioResult; 
     token?:string;
 }

@@ -1,46 +1,30 @@
 import { defaultConn }  from "../../../core/db";
 import { Usuario } from "../../../models/usuario.entity";
 import { HttpStatus } from "../../HttpStatus";
+import { UserResult } from "routes/resultSets/UserResult";
 
-export default function (fastify, opts, done) {      
-    
+export default function (fastify, opts, done) {          
+
+
     fastify.post('/add', async (request, reply) => {
-        
-        try {
-            let usuario = new Usuario();    // creamos entity o DAO
-            let usuarioRepo = await defaultConn.getRepository(Usuario); //obtenemos el repositorio correspondiente
 
-            Object.assign(usuario, request.body);   // asignamos el objeto que llega en el request
+        try {                        
 
-            await usuarioRepo.save(usuario);    // guardamos la informacion en bd
+            let usuario:Usuario = { ...request.body };            
+            let usuarioRepo = await defaultConn.getRepository(Usuario); //obtenemos el repositorio correspondiente            
 
-            reply.status(HttpStatus.OK).send("Usuario guardado con exito");   // estatus Ok
+            const userSaved:Usuario = await usuarioRepo.save(usuario);    // guardamos la informacion en bd            
+            const {nombre,contraseña} = userSaved;            
 
-        } catch (error) {
-            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send(error);  // error interno de servidor
-        }
-    });
+            let userResult:UserResult = { ...userSaved };   
 
-    fastify.get('/:id/tipoUsuario', async (request, reply) => {
-        
-        try {
+            userResult.token = fastify.jwt.sign({ nombre, contraseña}, {expiresIn:'1m'}); // generamos el token
 
-            let {id} = request.params;
-            let usuarioRepo = await defaultConn.getRepository(Usuario); //obtenemos el repositorio correspondiente
-            let usuario = await usuarioRepo.findOne(id, {
-                select:["idu_usuario","nom_usuario","fec_alta"],
-                relations:["tipousuario"],            
-                where:{ eliminado : 0}
-            });                                                
-
-            if(!usuario)
-                reply.status(HttpStatus.UNAUTHORIZED).send("El usuario no existe");   // estatus Bad request
-
-            reply.status(HttpStatus.OK).send(usuario);   // estatus Ok
+            await reply.status(HttpStatus.OK).send(userResult);                 // estatus Ok
 
         } catch (error) {
-            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send(error);  // error interno de servidor
-        }
+            reply.status(HttpStatus.INTERNAL_SERVER_ERROR).send({err:error});  // error interno de servidor
+        }        
     });
   
     fastify.post('/page', async (request, reply) => {    

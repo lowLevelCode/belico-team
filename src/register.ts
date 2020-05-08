@@ -5,6 +5,7 @@ import * as fastifyJwt from "fastify-jwt";
 import { createDefaultConnection, defaultConn } from './core/db';
 
 const app = fastify({ logger: true });
+
 console.log('Try to Starting');
 
 process.on('SIGINT', function () {
@@ -13,10 +14,7 @@ process.on('SIGINT', function () {
     process.exit();
 });
 
-process.nextTick(() => {
-    // Require the framework and instantiate it
-    //const fastify = require()({ logger: true })
-    // Run the server!
+process.nextTick(() => {    
     const start = async () => {
 
         console.log('Try to connect'); 
@@ -31,7 +29,7 @@ process.nextTick(() => {
         console.log('Registering Formbody');            
         app.register(formbody);
         
-        console.log('Registering API Routers',process.mainModule.filename);            
+        console.log('Registering API Routers',process.mainModule.filename);
         app.register(process.mainModule.exports as any, { prefix: '/api/v0' });
 
         try {

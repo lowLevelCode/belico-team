@@ -83,6 +83,7 @@ const TemplateForCRUD: TemplateDefinition<Model<any>, Hooks> & { initialize: typ
         });
 
         fastify.get('/', async req => {
+            console.log("asdasdasd");
             const result = await repo.find();
             return result || { message: 'not found' };
         });

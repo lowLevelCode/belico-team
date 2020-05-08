@@ -1,27 +1,27 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, ObjectIdColumn, ObjectID, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { TipoUsuario } from './tipoUsuario.entity';
 
 @Entity({name:"cat_usuario"})
 export class Usuario {
     
 
-    @PrimaryGeneratedColumn()
-    idu_usuario:number;
+    @PrimaryGeneratedColumn({name:"idu_usuario"})
+    id:number;
 
     @Column({ length: 100, nullable: false })  
-    nom_usuario:string;
+    nombre:string;
 
     @Column({ length: 50, nullable: false })  
-    clv_usuario:string;
+    contraseña:string;
     
-    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })  
-    fec_alta :Date;
+    @Column({ name:"fec_alta", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })  
+    createAt :Date;
     
-    @Column({ nullable: false , default:1})  
-    opc_activo :number;
+    @Column({ name:"opc_activo", nullable: false , default:1})  
+    opcActivo :number;
     
-    @Column({ nullable: false ,default:0})  
-    eliminado :number;    
+    @Column({name:"eliminado", nullable: false ,default:0})  
+    isEliminado :number;    
     
     @ManyToOne(type => TipoUsuario, tipoUsuario => tipoUsuario.usuarios)
     @JoinColumn({name: 'idu_tipousuario'})
